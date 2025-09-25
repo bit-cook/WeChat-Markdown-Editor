@@ -155,7 +155,7 @@ function tabChanged(tabName: string | number) {
         v-model="store.cssContentConfig.active"
         @update:model-value="tabChanged"
       >
-        <TabsList class="w-full overflow-x-auto">
+        <TabsList class="w-full overflow-x-auto justify-start">
           <TabsTrigger
             v-for="item in store.cssContentConfig.tabs"
             :key="item.name"
