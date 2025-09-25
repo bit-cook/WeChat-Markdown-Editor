@@ -1,4 +1,4 @@
-import { initRenderer } from '@md/core'
+import { generateThemeCSS, initRenderer } from '@md/core'
 import {
   defaultStyleConfig,
   themeMap,
@@ -29,7 +29,6 @@ import {
   sanitizeTitle,
 } from '@/utils'
 import { copyPlain } from '@/utils/clipboard'
-import { generateThemeCSS } from '@/utils/themeHelpers'
 
 /**********************************
  * Post 结构接口
