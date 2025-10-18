@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ChevronDownIcon, Menu, Settings } from 'lucide-vue-next'
 import { useDisplayStore, useStore } from '@/stores'
-import { addPrefix, processClipboardContent } from '@/utils'
+import { addPrefix, generatePureHTML, processClipboardContent } from '@/utils'
 import FormatDropdown from './FormatDropdown.vue'
 
 const emit = defineEmits([`startCopy`, `endCopy`])
@@ -104,7 +104,7 @@ function fallbackCopyUsingExecCommand(htmlContent: string) {
 async function copy() {
   // 如果是 Markdown 源码，直接复制并返回
   if (copyMode.value === `md`) {
-    const mdContent = editor.value?.getValue() || ``
+    const mdContent = editor.value?.state.doc.toString() || ``
     await copyContent(mdContent)
     toast.success(`已复制 Markdown 源码到剪贴板。`)
     return
@@ -161,6 +161,9 @@ async function copy() {
 
       if (copyMode.value === `html`) {
         await copyContent(temp)
+      }
+      else if (copyMode.value === `html-without-style`) {
+        await copyContent(await generatePureHTML(editor.value!.state.doc.toString()))
       }
       else if (copyMode.value === `html-and-style`) {
         await copyContent(store.editorContent2HTML())
@@ -237,7 +240,7 @@ async function copy() {
               <ChevronDownIcon class="text-secondary-foreground h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" :align-offset="-5" class="w-[200px]">
+          <DropdownMenuContent align="end" :align-offset="-5" class="w-[220px]">
             <DropdownMenuRadioGroup v-model="copyMode">
               <DropdownMenuRadioItem value="txt">
                 公众号格式
@@ -245,8 +248,11 @@ async function copy() {
               <DropdownMenuRadioItem value="html">
                 HTML 格式
               </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="html-without-style">
+                <span class="whitespace-nowrap">HTML 格式（无样式）</span>
+              </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="html-and-style">
-                HTML 格式（兼容样式）
+                <span class="whitespace-nowrap">HTML 格式（兼容样式）</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="md">
                 MD 格式

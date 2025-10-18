@@ -13,14 +13,12 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { VitePluginRadar } from 'vite-plugin-radar'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
+const isNetlify = process.env.SERVER_ENV === `NETLIFY`
 const isUTools = process.env.SERVER_ENV === `UTOOLS`
-const isCfWorkers = process.env.CF_PAGES === `1`
-const base
-  = process.env.SERVER_ENV === `NETLIFY` || isCfWorkers
-    ? `/`
-    : isUTools
-      ? `./`
-      : `/md/`
+const isCfWorkers = process.env.CF_WORKERS === `1`
+const isCfPages = process.env.CF_PAGES === `1`
+
+const base = isNetlify || isCfWorkers || isCfPages ? `/` : isUTools ? `./` : `/md/`
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
@@ -66,6 +64,7 @@ export default defineConfig(({ mode }) => {
               },
               workbox: {
                 maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+                navigateFallback: null,
               },
               devOptions: {
                 enabled: true,
@@ -98,18 +97,23 @@ export default defineConfig(({ mode }) => {
     css: { devSourcemap: true },
     build: {
       rollupOptions: {
+        external: [`mermaid`],
         output: {
           chunkFileNames: `static/js/md-[name]-[hash].js`,
           entryFileNames: `static/js/md-[name]-[hash].js`,
           assetFileNames: `static/[ext]/md-[name]-[hash].[ext]`,
+          globals: { mermaid: `mermaid` },
           manualChunks(id) {
             if (id.includes(`node_modules`)) {
               if (id.includes(`katex`))
                 return `katex`
-              if (id.includes(`mermaid`))
-                return `mermaid`
+              // mermaid 已改为外部 CDN 依赖
               if (id.includes(`highlight.js`))
                 return `hljs`
+              if (id.includes(`codemirror`))
+                return `codemirror`
+              if (id.includes(`prettier`))
+                return `prettier`
               const pkg = id
                 .split(`node_modules/`)[1]
                 .split(`/`)[0]
